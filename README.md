@@ -11,7 +11,7 @@ This Blender add-on automates the material setup process for models extracted wi
 
 ### How to Download and Install
 1. **Download the Add-on**:  
-   Download the latest release from the [Releases page](https://github.com/dyn-tools/dyna-nr-r6-importer/releases).
+   Download the latest release from the [Releases page (coming soon)]().
 
 2. **Install in Blender**:  
    - Open Blender and go to `Edit > Preferences > Add-ons`.
@@ -21,4 +21,4 @@ This Blender add-on automates the material setup process for models extracted wi
 3. You're ready to go! The tool will automatically set up materials for your imported R6 models.
 
 ## Credits
-Special thanks to [NamNamR6](https://x.com/NamNamR6) for fixing the material shader nodegroup and adjusting the config.
+Devaloped by: [Dyn4mic](https://x.com/dyn4micfx) and [Nam-Nam](https://x.com/NamNamR6)
