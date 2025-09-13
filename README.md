@@ -4,7 +4,7 @@
 DynaTools-R6 is a Blender add-on designed to clean up and set up NinjaRipper exports for Rainbow Six Siege. It provides various tools to optimize and organize mesh data, materials, textures, and lighting configurations to streamline the workflow.
 
 ## Credits
-[Nam-Nam](https://x.com/NamNamR6) who added a lot more functionality to this whole addon.
+Developed By: [Dyn4mic](https://x.com/dyn4micfx) and [Nam-Nam](https://x.com/NamNamR6)
 
 ---
 
