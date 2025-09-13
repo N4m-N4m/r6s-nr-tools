@@ -69,7 +69,7 @@ class NODE_PT_AutoSetupPanel(Panel):
         row.operator("object.create_lights_from_material", text="Create Lights From Material")
         
         row = box.row()
-        row.prop(scene.default_config_settings, "default_config", text="Default Config")
+        row.prop(scene.default_config_settings, "default_config", text="Material Setup")
         row.operator("node.auto_setup_config_adjustment", text="", icon="GREASEPENCIL")
         row = box.row()
         row.scale_y = 2.0
@@ -110,15 +110,15 @@ class NODE_MT_MaterialSelectionPopup(bpy.types.Menu):
         layout.operator("object.select_objects_containing_materials", text="Every Material On Selected")
         layout.operator("object.select_objects_containging_selected_material", text="Active Material")
 
-# Define the property group for the dropdown.
+
 class DefaultConfigSettings(bpy.types.PropertyGroup):
     default_config: bpy.props.EnumProperty(
-        name="Default Config",
-        description="Select a default configuration",
+        name="Material Setup",
+        description="Select material setup type",
         items=[
-            ("MAP", "Map Material Setup", "Default config for map materials"),
-            ("CHAR", "Character Mat Setup", "Default config for character materials"),
-            ("GUN", "Gun/Gadget Setup", "Default config for guns/gadget materials")
+            ("MAP", "Map Material", "Map materials with Siege Object BSDF"),
+            ("CHAR", "Character Material", "Character materials with Siege Character BSDF"),
+            ("GUN", "Gun/Gadget Material", "Gun/Gadget materials with Siege Weapon BSDF")
         ],
         default="MAP"
     ) # type: ignore
@@ -164,6 +164,18 @@ class UvNamePropperty(bpy.types.PropertyGroup):
         default="uv_2"
     )# type: ignore
 
+class ShaderTypeSettings(bpy.types.PropertyGroup):
+    shader_type: bpy.props.EnumProperty(
+        name="Shader Type",
+        description="Choose the shader type for material setup",
+        items=[
+            ('Siege Object BSDF', "Siege Object BSDF", "Standard object shader"),
+            ('Siege Character BSDF', "Siege Character BSDF", "Character shader"),
+            ('Siege Weapon BSDF', "Siege Weapon BSDF", "Weapon shader"),
+        ],
+        default='Siege Object BSDF',
+    ) # type: ignore
+
 
 def register():
     bpy.utils.register_class(NODE_PT_AutoSetupPanel)
@@ -178,6 +190,8 @@ def register():
     bpy.types.Scene.align_props = bpy.props.PointerProperty(type=AlignmentSettings)
     bpy.utils.register_class(UvNamePropperty)
     bpy.types.Scene.uv_settings = bpy.props.PointerProperty(type=UvNamePropperty)
+    bpy.utils.register_class(ShaderTypeSettings)
+    bpy.types.Scene.shader_settings = bpy.props.PointerProperty(type=ShaderTypeSettings)
 
 
 def unregister():
@@ -193,3 +207,5 @@ def unregister():
     del bpy.types.Scene.align_props
     bpy.utils.unregister_class(UvNamePropperty)
     del bpy.types.Scene.uv_settings
+    bpy.utils.unregister_class(ShaderTypeSettings)
+    del bpy.types.Scene.shader_settings

@@ -218,19 +218,28 @@ def append_shader_group(group_name):
 
     return bpy.data.node_groups.get(group_name)
 
+def get_shader_type_from_config(config_type):
+    """
+    Get the corresponding shader type based on config type.
+    """
+    shader_mapping = {
+        'MAP': 'Siege Object BSDF',
+        'CHAR': 'Siege Character BSDF', 
+        'GUN': 'Siege Weapon BSDF'
+    }
+    return shader_mapping.get(config_type, 'Siege Object BSDF')
 
 def load_shader_groups():
     """
-    Load the 'Siege Object BSDF' shader group.
+    Load all shader groups.
     """
-    shader_groups = ["Siege Object BSDF"]  # Add additional group names if needed
+    shader_groups = ["Siege Object BSDF", "Siege Character BSDF", "Siege Weapon BSDF"]
     for group_name in shader_groups:
         shader_group = append_shader_group(group_name)
         if shader_group:
             print(f"Shader group '{group_name}' loaded successfully.")
         else:
             print(f"Shader group '{group_name}' could not be loaded.")
-
 
 class NODE_OT_AutoSetup(bpy.types.Operator):
     """
@@ -248,6 +257,11 @@ class NODE_OT_AutoSetup(bpy.types.Operator):
         # Ensure shader groups are loaded before use.
         load_shader_groups()
 
+        # Get the selected config type and corresponding shader
+        config_type = context.scene.default_config_settings.default_config
+        selected_shader_type = get_shader_type_from_config(config_type)
+        print(f"DEBUG: Config type: {config_type}, Shader type: {selected_shader_type}")  # Add this for debugging
+        
         # Prepare the config_switch dictionary.
         text_name = "config_switch.json"
         if text_name in bpy.data.texts:
@@ -295,17 +309,17 @@ class NODE_OT_AutoSetup(bpy.types.Operator):
                     already_existing = False
 
                     for node in tree.nodes:
-                        if node.type == "GROUP" and node.node_tree and node.node_tree.name == 'Siege Object BSDF':
+                        if node.type == "GROUP" and node.node_tree and node.node_tree.name == selected_shader_type:
                             already_existing = True
 
                     if not already_existing:
-                        instantiate_group(tree.nodes, 'Siege Object BSDF')
+                        instantiate_group(tree.nodes, selected_shader_type)
 
                     node_group = None
                     for node in tree.nodes:
                         if "Image Texture" in node.name and node.image is not None:
                             node.image.alpha_mode = 'NONE'
-                        if node.type == "GROUP" and node.node_tree and node.node_tree.name == 'Siege Object BSDF':
+                        if node.type == "GROUP" and node.node_tree and node.node_tree.name == selected_shader_type:
                             node_group = node
                             break
 
