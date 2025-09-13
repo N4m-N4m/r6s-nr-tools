@@ -70,10 +70,12 @@ def get_textures_for_object(log_file_path, texture_folder, object_name):
 
     # Find the mesh section
     for idx, line in enumerate(lines):
-        if normalized_texture_folder in line and object_name in line:
+        if object_name in line:
             section_found = True
             start_index = idx
             break
+
+
 
     if not section_found:
         print("Section not found")

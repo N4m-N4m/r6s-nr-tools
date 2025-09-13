@@ -1,4 +1,5 @@
 import bpy # type: ignore
+import bmesh # type: ignore
 
 
 class NODE_PT_MergeDuplicateMaterials(bpy.types.Operator):
@@ -82,9 +83,93 @@ def merge_materials(mat_keep, mat_remove):
                     slot.material = mat_keep
 
 
+class NODE_PT_DeleteDuplicateObjects(bpy.types.Operator):
+    bl_idname = "object.delete_duplicate_objects"
+    bl_label = "Delete Duplicate Objects"
+    bl_description = "Delete duplicate objects based on their mesh distance and material"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        DISTANCE_THRESHOLD = 0.01
+        count = 0
+
+        # Group objects by materials
+        materials_dict = {}
+        for obj in bpy.data.objects:
+            if obj.type == 'MESH' and obj.data.materials and obj.visible_get():
+                for mat in obj.data.materials:
+                    if mat.name not in materials_dict:
+                        materials_dict[mat.name] = []
+                    materials_dict[mat.name].append(obj)
+
+        # Process each material group
+        for mat_name, objects in materials_dict.items():
+            i = 0
+            while i < len(objects):
+                obj_a = objects[i]
+                if obj_a.name not in bpy.data.objects:
+                    objects.pop(i)
+                    continue
+
+                j = i + 1
+                while j < len(objects):
+                    obj_b = objects[j]
+                    if obj_b.name not in bpy.data.objects:
+                        objects.pop(j)
+                        continue
+
+                    # Check if vertices are fully matching
+                    if are_vertices_fully_matching(obj_a, obj_b, DISTANCE_THRESHOLD):
+
+                        count += 1
+
+                        # Compare the number of material slots (panels) to decide which to keep
+                        if len(obj_a.data.materials) >= len(obj_b.data.materials):
+                            bpy.data.objects.remove(obj_b, do_unlink=True)
+                            objects.pop(j)
+                        else:
+                            bpy.data.objects.remove(obj_a, do_unlink=True)
+                            objects.pop(i)
+                            break
+                    else:
+                        j += 1
+                else:
+                    i += 1
+
+        self.report({'INFO'}, f"Deleted {count} duplicate objects.")
+        return {'FINISHED'}
+
+
+def are_vertices_fully_matching(obj_a, obj_b, distance_threshold):
+    # Ensure both objects have the same vertex count
+    if len(obj_a.data.vertices) != len(obj_b.data.vertices):
+        return False
+
+    # Convert objects to BMesh for vertex-level operations
+    bm_a = bmesh.new()
+    bm_b = bmesh.new()
+    bm_a.from_mesh(obj_a.data)
+    bm_b.from_mesh(obj_b.data)
+
+    # Check that every vertex matches within the threshold
+    for v_a, v_b in zip(bm_a.verts, bm_b.verts):
+        world_v_a = obj_a.matrix_world @ v_a.co
+        world_v_b = obj_b.matrix_world @ v_b.co
+        if (world_v_a - world_v_b).length > distance_threshold:
+            bm_a.free()
+            bm_b.free()
+            return False
+
+    bm_a.free()
+    bm_b.free()
+    return True
+
+
 def register():
     bpy.utils.register_class(NODE_PT_MergeDuplicateMaterials)
+    bpy.utils.register_class(NODE_PT_DeleteDuplicateObjects)
 
 def unregister():
     bpy.utils.unregister_class(NODE_PT_MergeDuplicateMaterials)
+    bpy.utils.unregister_class(NODE_PT_DeleteDuplicateObjects)
 
