@@ -4,188 +4,174 @@ import json
 
 # Global default config dictionaries.
 DEFAULT_CONFIG_MAP = {
-    2: {"USE-Premul": False, "Override Color": None, "Override Strength": None, "Diffuse": 0, "Alpha Input": 0, "PBR Multi": None,
-        "Normal Base": 1, "Mix Factor": None, "Diffuse 2": None, "Alpha Input 2": None, "PBR Multi 2": None, "Normal Base 2": None},
+    2: {
+    "USE-Premul": False, "Override Color": None, "Override Strength": None, "Diffuse": 0, "Alpha Input": 0, "PBR Multi": None,"Normal Base": 1, 
+    "Mix Factor": None, "Diffuse 2": None, "Alpha Input 2": None, "PBR Multi 2": None, "Normal Base 2": None,
+    "Invert Base": True,
+    "Invert Base 2": True,
+    "Image_Properties": {
+        0: {"colorspace": "sRGB", "alpha_mode": "STRAIGHT"},
+        1: {"colorspace": "Non-Color", "alpha_mode": "NONE"}
+    }},
     3: {"USE-Premul": True,  "Override Color": None, "Override Strength": None, "Diffuse": 0, "Alpha Input": 0, "PBR Multi": 2,
-        "Normal Base": 1, "Mix Factor": None, "Diffuse 2": None, "Alpha Input 2": None, "PBR Multi 2": None, "Normal Base 2": None},
+        "Normal Base": 1, "Mix Factor": None, "Diffuse 2": None, "Alpha Input 2": None, "PBR Multi 2": None, "Normal Base 2": None,
+        "Invert Base": True,
+        "Invert Base 2": True,
+        "Image_Properties": {
+        0: {"colorspace": "sRGB", "alpha_mode": "STRAIGHT"},
+        1: {"colorspace": "Non-Color", "alpha_mode": "NONE"},
+        2: {"colorspace": "sRGB", "alpha_mode": "NONE"}
+        }},
     4: {"USE-Premul": True,  "Override Color": 0,    "Override Strength": 3,    "Diffuse": 0, "Alpha Input": 0, "PBR Multi": 2,
-        "Normal Base": 1, "Mix Factor": None, "Diffuse 2": None, "Alpha Input 2": None, "PBR Multi 2": None, "Normal Base 2": None},
+        "Normal Base": 1, "Mix Factor": None, "Diffuse 2": None, "Alpha Input 2": None, "PBR Multi 2": None, "Normal Base 2": None, 
+        "Invert Base": True,
+        "Invert Base 2": True,
+        "Image_Properties": {
+        0: {"colorspace": "sRGB", "alpha_mode": "STRAIGHT"},
+        1: {"colorspace": "Non-Color", "alpha_mode": "NONE"},
+        2: {"colorspace": "sRGB", "alpha_mode": "NONE"},
+        3: {"colorspace": "sRGB", "alpha_mode": "STRAIGHT"}
+        }},
     5: {"USE-Premul": True,  "Override Color": 0,    "Override Strength": 3,    "Diffuse": 0, "Alpha Input": 0, "PBR Multi": 2,
-        "Normal Base": 1, "Mix Factor": None, "Diffuse 2": None, "Alpha Input 2": None, "PBR Multi 2": None, "Normal Base 2": None},
-    6: {"Override Color": None, "Override Strength": None, "Diffuse": 3, "Alpha Input": None, "PBR Multi": 5,
-        "Normal Base": 4, "Mix Factor": 0, "Diffuse 2": 0, "Alpha Input 2": None, "PBR Multi 2": 2, "Normal Base 2": 1},
-    7: {"Override Color": None, "Override Strength": 6, "Diffuse": 3, "Alpha Input": None, "PBR Multi": 5,
-        "Normal Base": 4, "Mix Factor": 0, "Diffuse 2": 0, "Alpha Input 2": None, "PBR Multi 2": 2, "Normal Base 2": 1}
+        "Normal Base": 1, "Mix Factor": None, "Diffuse 2": None, "Alpha Input 2": None, "PBR Multi 2": None, "Normal Base 2": None,
+        "Invert Base": True,
+        "Invert Base 2": True,
+        "Image_Properties": {
+        0: {"colorspace": "sRGB", "alpha_mode": "STRAIGHT"},
+        1: {"colorspace": "Non-Color", "alpha_mode": "NONE"},
+        2: {"colorspace": "sRGB", "alpha_mode": "NONE"},
+        3: {"colorspace": "sRGB", "alpha_mode": "STRAIGHT"}
+        }},
+    6: {"USE-Premul": True, "Override Color": None, "Override Strength": None, "Diffuse": 3, "Alpha Input": None, "PBR Multi": 5,
+        "Normal Base": 4, "Mix Factor": 0, "Diffuse 2": 0, "Alpha Input 2": None, "PBR Multi 2": 2, "Normal Base 2": 1,
+        "Invert Base": True,
+        "Invert Base 2": True,
+        "Image_Properties": {
+        0: {"colorspace": "sRGB", "alpha_mode": "STRAIGHT"},
+        1: {"colorspace": "Non-Color", "alpha_mode": "NONE"},
+        2: {"colorspace": "sRGB", "alpha_mode": "NONE"},
+        3: {"colorspace": "sRGB", "alpha_mode": "STRAIGHT"},
+        4: {"colorspace": "Non-Color", "alpha_mode": "NONE"},
+        5: {"colorspace": "sRGB", "alpha_mode": "NONE"},
+        }},
+    7: {"USE-Premul": True, "Override Color": None, "Override Strength": 6, "Diffuse": 3, "Alpha Input": None, "PBR Multi": 5,
+        "Normal Base": 4, "Mix Factor": 0, "Diffuse 2": 0, "Alpha Input 2": None, "PBR Multi 2": 2, "Normal Base 2": 1,
+        "Invert Base": True,
+        "Invert Base 2": True,
+        "Image_Properties": {
+        0: {"colorspace": "sRGB", "alpha_mode": "STRAIGHT"},
+        1: {"colorspace": "Non-Color", "alpha_mode": "NONE"},
+        2: {"colorspace": "sRGB", "alpha_mode": "NONE"},
+        3: {"colorspace": "sRGB", "alpha_mode": "STRAIGHT"},
+        4: {"colorspace": "Non-Color", "alpha_mode": "NONE"},
+        5: {"colorspace": "sRGB", "alpha_mode": "NONE"},
+        6: {"colorspace": "sRGB", "alpha_mode": "NONE"},
+        }}
 }
 
 DEFAULT_CONFIG_OPERATOR = {
-    2: {
-        "USE-Premul": True,
-        "Override Color": None,
-        "Override Strength": None,
-        "Diffuse": 0,
-        "Alpha Input": 0,
-        "PBR Multi": None,
-        "Normal Base": 1,
-        "Mix Factor": None,
-        "Diffuse 2": None,
-        "Alpha Input 2": None,
-        "PBR Multi 2": None,
-        "Normal Base 2": None
-    },
-    3: {
-        "USE-Premul": True,
-        "Override Color": None,
-        "Override Strength": None,
-        "Diffuse": 0,
-        "Alpha Input": 0,
-        "PBR Multi": 2,
-        "Normal Base": 1,
-        "Mix Factor": None,
-        "Diffuse 2": None,
-        "Alpha Input 2": None,
-        "PBR Multi 2": None,
-        "Normal Base 2": None
-    },
-    4: {
-        "USE-Premul": False,
-        "Override Color": None,
-        "Override Strength": None,
-        "Diffuse": 0,
-        "Alpha Input": 0,
-        "PBR Multi": 2,
-        "Normal Base": 1,
-        "Mix Factor": None,
-        "Diffuse 2": None,
-        "Alpha Input 2": None,
-        "PBR Multi 2": None,
-        "Normal Base 2": 3
-    },
-    5: {
-        "USE-Premul": True,
-        "Override Color": None,
-        "Override Strength": None,
-        "Diffuse": 0,
-        "Alpha Input": 0,
-        "PBR Multi": 3,
-        "Normal Base": 2,
-        "Mix Factor": None,
-        "Diffuse 2": None,
-        "Alpha Input 2": None,
-        "PBR Multi 2": None,
-        "Normal Base 2": 4
-    },
-    6: {
-        "Override Color": None,
-        "Override Strength": None,
-        "Diffuse": 3,
-        "Alpha Input": None,
-        "PBR Multi": 5,
-        "Normal Base": 4,
-        "Mix Factor": 0,
-        "Diffuse 2": 0,
-        "Alpha Input 2": None,
-        "PBR Multi 2": 2,
-        "Normal Base 2": 1
-    },
-    7: {
-        "Override Color": None,
-        "Override Strength": None,
-        "Diffuse": 3,
-        "Alpha Input": None,
-        "PBR Multi": 5,
-        "Normal Base": 4,
-        "Mix Factor": 0,
-        "Diffuse 2": 0,
-        "Alpha Input 2": None,
-        "PBR Multi 2": 2,
-        "Normal Base 2": 1
-    }
+    2: {"USE-Premul": True, "Alpha Input": 0, "Diffuse": 0, "PBR Multi": None, "Normal Base": 1, 
+        "Detail Strength": None, "ID map": None,"Normal Detail R": None,  "Normal Detail G": None,  "Normal Detail B": None,
+        "Invert Base": True, "Invert Detail R": False, "Invert Detail G": False, "Invert Detail B": False,
+        "Image_Properties": {
+            "0": {"colorspace": "sRGB", "alpha_mode": "STRAIGHT"},
+            "1": {"colorspace": "Non-Color", "alpha_mode": "NONE"}
+        }},
+    5: {"USE-Premul": True, "Alpha Input": None, "Diffuse": 1, "PBR Multi": 3, "Normal Base": 2,
+        "Detail Strength": 1.00, "ID map": None, "Normal Detail R": 0, "Normal Detail G": 4, "Normal Detail B": None,
+        "Invert Base": True, "Invert Detail R": False, "Invert Detail G": False, "Invert Detail B": False,
+        "Image_Properties": {
+            "0": {"colorspace": "Non-Color", "alpha_mode": "NONE"},
+            "1": {"colorspace": "sRGB", "alpha_mode": "NONE"},
+            "2": {"colorspace": "Non-Color", "alpha_mode": "NONE"},
+            "3": {"colorspace": "sRGB", "alpha_mode": "NONE"},
+            "4": {"colorspace": "sRGB", "alpha_mode": "NONE"},
+        }},
+    8: {"USE-Premul": True, "Alpha Input": None, "Diffuse": 6, "PBR Multi": None, "Normal Base": 7,
+        "Detail Strength": 1.00, "ID map": None, "Normal Detail R": 1, "Normal Detail G": 3, "Normal Detail B": 5,
+        "Invert Base": True, "Invert Detail R": True, "Invert Detail G": True, "Invert Detail B": True,
+        "Image_Properties": {
+            "0": {"colorspace": "sRGB", "alpha_mode": "NONE"},
+            "1": {"colorspace": "Non-Color", "alpha_mode": "NONE"},
+            "2": {"colorspace": "sRGB", "alpha_mode": "NONE"},
+            "3": {"colorspace": "Non-Color", "alpha_mode": "NONE"},
+            "4": {"colorspace": "sRGB", "alpha_mode": "NONE"},
+            "5": {"colorspace": "Non-Color", "alpha_mode": "NONE"},
+            "6": {"colorspace": "sRGB", "alpha_mode": "NONE"},
+            "7": {"colorspace": "Non-Color", "alpha_mode": "NONE"}
+        }},
+    9: {"USE-Premul": True, "Alpha Input": None, "Diffuse": 6, "PBR Multi": 8, "Normal Base": 7,
+        "Detail Strength": 1.00, "ID map": None, "Normal Detail R": 1, "Normal Detail G": 3, "Normal Detail B": 5,
+        "Invert Base": True, "Invert Detail R": True, "Invert Detail G": True, "Invert Detail B": True,
+        "Image_Properties": {
+            "0": {"colorspace": "sRGB", "alpha_mode": "NONE"},
+            "1": {"colorspace": "Non-Color", "alpha_mode": "NONE"},
+            "2": {"colorspace": "sRGB", "alpha_mode": "NONE"},
+            "3": {"colorspace": "Non-Color", "alpha_mode": "NONE"},
+            "4": {"colorspace": "sRGB", "alpha_mode": "NONE"},
+            "5": {"colorspace": "Non-Color", "alpha_mode": "NONE"},
+            "6": {"colorspace": "sRGB", "alpha_mode": "NONE"},
+            "7": {"colorspace": "Non-Color", "alpha_mode": "NONE"},
+            "8": {"colorspace": "sRGB", "alpha_mode": "NONE"}
+        }},
+    10: {"USE-Premul": True, "Alpha Input": None, "Diffuse": 6, "PBR Multi": 8, "Normal Base": 7,
+        "Detail Strength": 1.00, "ID map": 9, "Normal Detail R": 1, "Normal Detail G": 3, "Normal Detail B": 5,
+        "Invert Base": True, "Invert Detail R": True, "Invert Detail G": True, "Invert Detail B": True,
+        "Image_Properties": {
+            "0": {"colorspace": "sRGB", "alpha_mode": "NONE"},
+            "1": {"colorspace": "Non-Color", "alpha_mode": "NONE"},
+            "2": {"colorspace": "sRGB", "alpha_mode": "NONE"},
+            "3": {"colorspace": "Non-Color", "alpha_mode": "NONE"},
+            "4": {"colorspace": "sRGB", "alpha_mode": "NONE"},
+            "5": {"colorspace": "Non-Color", "alpha_mode": "NONE"},
+            "6": {"colorspace": "sRGB", "alpha_mode": "NONE"},
+            "7": {"colorspace": "Non-Color", "alpha_mode": "NONE"},
+            "8": {"colorspace": "sRGB", "alpha_mode": "NONE"},
+            "9": {"colorspace": "sRGB", "alpha_mode": "NONE"},
+        }},
+
+
+        
 }
 
 DEFAULT_CONFIG_GUN = {
-    2: {
-        "USE-Premul": True,
-        "Override Color": None,
-        "Override Strength": None,
-        "Diffuse": 0,
-        "Alpha Input": 0,
-        "PBR Multi": None,
-        "Normal Base": 1,
-        "Mix Factor": None,
-        "Diffuse 2": None,
-        "Alpha Input 2": None,
-        "PBR Multi 2": None,
-        "Normal Base 2": None
-    },
-    3: {
-        "USE-Premul": True,
-        "Override Color": None,
-        "Override Strength": None,
-        "Diffuse": 0,
-        "Alpha Input": 0,
-        "PBR Multi": 2,
-        "Normal Base": 1,
-        "Mix Factor": None,
-        "Diffuse 2": None,
-        "Alpha Input 2": None,
-        "PBR Multi 2": None,
-        "Normal Base 2": None
-    },
-    4: {
-        "USE-Premul": False,
-        "Override Color": None,
-        "Override Strength": None,
-        "Diffuse": 0,
-        "Alpha Input": 0,
-        "PBR Multi": 2,
-        "Normal Base": 1,
-        "Mix Factor": None,
-        "Diffuse 2": None,
-        "Alpha Input 2": None,
-        "PBR Multi 2": None,
-        "Normal Base 2": 3
-    },
-    5: {
-        "USE-Premul": True,
-        "Override Color": None,
-        "Override Strength": None,
-        "Diffuse": 0,
-        "Alpha Input": 0,
-        "PBR Multi": 3,
-        "Normal Base": 2,
-        "Mix Factor": None,
-        "Diffuse 2": None,
-        "Alpha Input 2": None,
-        "PBR Multi 2": None,
-        "Normal Base 2": 4
-    },
-    6: {
-        "Override Color": None,
-        "Override Strength": None,
-        "Diffuse": 3,
-        "Alpha Input": None,
-        "PBR Multi": 5,
-        "Normal Base": 4,
-        "Mix Factor": 0,
-        "Diffuse 2": 0,
-        "Alpha Input 2": None,
-        "PBR Multi 2": 2,
-        "Normal Base 2": 1
-    },
-    7: {
-        "Override Color": None,
-        "Override Strength": None,
-        "Diffuse": 3,
-        "Alpha Input": None,
-        "PBR Multi": 5,
-        "Normal Base": 4,
-        "Mix Factor": 0,
-        "Diffuse 2": 0,
-        "Alpha Input 2": None,
-        "PBR Multi 2": 2,
-        "Normal Base 2": 1
-    }
+    1: {"USE-Premul": True, "Override Color": None, "Override Strength": None, "Diffuse": 0, "Alpha Input": 0, "PBR Multi": None,
+        "Normal Base": None, "Detail Strength": None, "Normal Detail": None,
+        "Invert Base": True,
+        "Invert Detail": True,
+        "Image_Properties": {
+            "0": {"colorspace": "sRGB", "alpha_mode": "STRAIGHT"},
+        }},
+    3: {"USE-Premul": True, "Override Color": None, "Override Strength": None, "Diffuse": 0, "Alpha Input": None, "PBR Multi": 2,
+        "Normal Base": 1, "Detail Strength": None, "Normal Detail": None,
+        "Invert Base": True,
+        "Invert Detail": True,
+        "Image_Properties": {
+            "0": {"colorspace": "sRGB", "alpha_mode": "NONE"},
+            "1": {"colorspace": "Non-Color", "alpha_mode": "NONE"},
+            "2": {"colorspace": "sRGB", "alpha_mode": "NONE"},
+        }},
+    4: {"USE-Premul": True, "Override Color": None, "Override Strength": None, "Diffuse": 0, "Alpha Input": None, "PBR Multi": 2,
+        "Normal Base": 1, "Detail Strength": 1.00, "Normal Detail": 3,
+        "Invert Base": True,
+        "Invert Detail": True,
+        "Image_Properties": {
+            "0": {"colorspace": "sRGB", "alpha_mode": "NONE"},
+            "1": {"colorspace": "Non-Color", "alpha_mode": "NONE"},
+            "2": {"colorspace": "sRGB", "alpha_mode": "NONE"},
+            "3": {"colorspace": "Non-Color", "alpha_mode": "NONE"},
+        }},
+    5: {"USE-Premul": True, "Override Color": None, "Override Strength": None, "Diffuse": 1, "Alpha Input": None, "PBR Multi": 3,
+        "Normal Base": 2, "Detail Strength": 1.00, "Normal Detail": 4,
+        "Invert Base": True,
+        "Invert Detail": True,
+        "Image_Properties": {
+            "0": {"colorspace": "sRGB", "alpha_mode": "NONE"},
+            "1": {"colorspace": "sRGB", "alpha_mode": "STRAIGHT"},
+            "2": {"colorspace": "Non-Color", "alpha_mode": "NONE"},
+            "3": {"colorspace": "sRGB", "alpha_mode": "NONE"},
+            "4": {"colorspace": "Non-Color", "alpha_mode": "NONE"},
+        }},
 }
 
 # Mapping for default config types.
@@ -290,12 +276,6 @@ class NODE_OT_AutoSetup(bpy.types.Operator):
             return group
 
         def dyn_genlink(input_name, output_name, img_node, use_premul=None):
-            first_word = input_name.split(" ")[0]
-            if first_word == "PBR" or first_word == "Normal":
-                img_node.image.colorspace_settings.name = "Non-Color"
-            if input_name == "Mix Factor":
-                img_node.image.alpha_mode = 'STRAIGHT'
-
             if use_premul is not None and hasattr(img_node.image, 'alpha_mode'):
                 img_node.image.alpha_mode = 'PREMUL' if use_premul else 'NONE'
 
@@ -331,15 +311,38 @@ class NODE_OT_AutoSetup(bpy.types.Operator):
                         count = len(img_nodes)
                         config = config_switch.get(count, {})
 
-                        for input_key, img_index in config.items():
-                            if img_index is not None and img_index < count:
+                        # Apply image properties from config
+                        image_props = config.get("Image_Properties", {})
+                        for img_index_str, properties in image_props.items():
+                            img_index = int(img_index_str)  # Convert string key to int
+                            if img_index < count:
                                 img_node = img_nodes[img_index]
-                                use_premul = config.get("USE-Premul", False)
-                                first_word = input_key.split(" ")[0]
-                                if input_key in {"Override Strength", "PBR", "Mix Factor"} or first_word == "Alpha":
-                                    dyn_genlink(input_key, "Alpha", img_node, use_premul=use_premul)
-                                elif input_key != "USE-Premul":
-                                    dyn_genlink(input_key, "Color", img_node)
+                                if "colorspace" in properties:
+                                    img_node.image.colorspace_settings.name = properties["colorspace"]
+                                if "alpha_mode" in properties:
+                                    img_node.image.alpha_mode = properties["alpha_mode"]
+
+                        for input_key, img_index in config.items():
+                            if input_key != "Image_Properties":
+                                # Handle boolean values (like invert flags)
+                                if isinstance(img_index, bool):
+                                    if input_key in node_group.inputs:
+                                        node_group.inputs[input_key].default_value = img_index
+                                
+                                # Handle float values (like strength settings)
+                                elif isinstance(img_index, float):
+                                    if input_key in node_group.inputs:
+                                        node_group.inputs[input_key].default_value = img_index
+                                
+                                # Handle image node connections
+                                elif isinstance(img_index, int) and img_index < count:
+                                    img_node = img_nodes[img_index]
+                                    use_premul = config.get("USE-Premul", False)
+                                    first_word = input_key.split(" ")[0]
+                                    if input_key in {"Override Strength", "PBR", "Mix Factor"} or first_word == "Alpha":
+                                        dyn_genlink(input_key, "Alpha", img_node, use_premul=use_premul)
+                                    elif input_key != "USE-Premul":
+                                        dyn_genlink(input_key, "Color", img_node)
 
                         tree.links.new(input_node, output_node)
 
