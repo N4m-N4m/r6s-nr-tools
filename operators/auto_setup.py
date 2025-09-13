@@ -25,9 +25,9 @@ def append_shader_group(group_name):
 
 def load_shader_groups():
     """
-    Load the 'Siege Object BSDF' shader group.
+    Load shader group.
     """
-    shader_groups = ["Siege Object BSDF"]  # Add additional group names if needed
+    shader_groups = ["Siege Object BSDF", "Siege Character BSDF", "Siege Weapon BSDF"]  # Add additional group names if needed
     for group_name in shader_groups:
         shader_group = append_shader_group(group_name)
         if shader_group:
@@ -43,6 +43,12 @@ class NODE_OT_AutoSetup(bpy.types.Operator):
     bl_label = "Auto Setup Node Group"
     bl_options = {'REGISTER', 'UNDO'}
 
+    shader_type: bpy.props.StringProperty(
+        name="Shader Type",
+        description="The shader type to use",
+        default="Siege Object BSDF"
+    ) # type: ignore
+    
     def execute(self, context):
         # Ensure shader groups are loaded before use
         load_shader_groups()
@@ -58,8 +64,10 @@ class NODE_OT_AutoSetup(bpy.types.Operator):
 
         def dyn_genlink(input, output, img_node, use_premul=None):
             first_word = input.split(" ")[0]
-            if first_word == "PBR" or first_word == "Normal":
+            if first_word == "Normal":
                 img_node.image.colorspace_settings.name = "Non-Color"
+            if first_word == "PBR":
+                img_node.image.colorspace_settings.name = "sRGB"
             if input == "Mix Factor":
                 img_node.image.alpha_mode = 'STRAIGHT'
 
@@ -76,17 +84,17 @@ class NODE_OT_AutoSetup(bpy.types.Operator):
                     already_existing = False
 
                     for node in tree.nodes:
-                        if node.type == "GROUP" and node.node_tree and node.node_tree.name == 'Siege Object BSDF':
+                        if node.type == "GROUP" and node.node_tree and node.node_tree.name == self.shader_type:
                             already_existing = True
 
                     if not already_existing:
-                        instantiate_group(mat.node_tree.nodes, 'Siege Object BSDF')
+                        instantiate_group(mat.node_tree.nodes, self.shader_type)
 
                     node_group = None
                     for node in tree.nodes:
                         if "Image Texture" in node.name and node.image is not None:
                             node.image.alpha_mode = 'NONE'
-                        if node.type == "GROUP" and node.node_tree and node.node_tree.name == 'Siege Object BSDF':
+                        if node.type == "GROUP" and node.node_tree and node.node_tree.name == self.shader_type:
                             node_group = node
                             break
 

@@ -4,13 +4,13 @@ from bpy.types import Panel # type: ignore
 
 class NODE_PT_AutoSetupPanel(Panel):
     """
-    UI Panel for DynaTools-R6
+    UI Panel for R6S Cleanup Tools
     """
-    bl_label = "DynaTools-R6"
+    bl_label = "R6S Cleanup Tools"
     bl_idname = "VIEW3D_PT_dyna_tools"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_category = 'DynaTools-R6'
+    bl_category = 'R6S-Cleanup'
 
     def draw(self, context):
         layout = self.layout
@@ -77,10 +77,15 @@ class NODE_PT_AutoSetupPanel(Panel):
         row = box.row()
         row.operator("object.set_active_uv", text="Set Active UV").uv_name = scene.uv_settings.layer_name
 
+        # Dropdown for Shader Type
+        row = box.row()
+        row.prop(scene.shader_settings, "shader_type", text="Shader Type")
+
         # Button for Auto Setup Node Group
         row = box.row()
         row.scale_y = 2.0  # Set the scale to make the button larger
-        row.operator("node.auto_setup_node_group", text="Auto Setup Node Group")
+        op = row.operator("node.auto_setup_node_group", text="Auto Setup Node Group")
+        op.shader_type = scene.shader_settings.shader_type
 
         # Button for Create Lights From Material
         row = box.row()
@@ -149,6 +154,18 @@ class UvNamePropperty(bpy.types.PropertyGroup):
         default="uv_2",
     ) # type: ignore
 
+class ShaderTypeSettings(bpy.types.PropertyGroup):
+    shader_type: bpy.props.EnumProperty(
+        name="Shader Type",
+        description="Choose the shader type for material setup",
+        items=[
+            ('Siege Object BSDF', "Siege Object BSDF", "Standard object shader"),
+            ('Siege Character BSDF', "Siege Character BSDF", "Character shader"),
+            ('Siege Weapon BSDF', "Siege Weapon BSDF", "Weapon shader"),
+        ],
+        default='Siege Object BSDF',
+    ) # type: ignore
+
 def register():
     bpy.utils.register_class(NODE_PT_AutoSetupPanel)
 
@@ -161,6 +178,9 @@ def register():
     bpy.utils.register_class(UvNamePropperty)
     bpy.types.Scene.uv_settings  = bpy.props.PointerProperty(type=UvNamePropperty)
 
+    bpy.utils.register_class(ShaderTypeSettings)
+    bpy.types.Scene.shader_settings = bpy.props.PointerProperty(type=ShaderTypeSettings)
+
 def unregister():
     bpy.utils.unregister_class(NODE_PT_AutoSetupPanel)
 
@@ -172,3 +192,6 @@ def unregister():
 
     bpy.utils.unregister_class(UvNamePropperty)
     del bpy.types.Scene.uv_settings 
+
+    bpy.utils.unregister_class(ShaderTypeSettings)
+    del bpy.types.Scene.shader_settings
