@@ -8,6 +8,7 @@ class OBJECT_OT_CleanUpUVs(bpy.types.Operator):
 
     def execute(self, context):
         
+        total_removed_count = 0
         processed_count = 0
         
         # Process each selected object
@@ -27,10 +28,7 @@ class OBJECT_OT_CleanUpUVs(bpy.types.Operator):
             if not active_render_uv:
                 print(f"  No UV maps found on this object")
                 continue
-            
-            print(f"  Active render UV map: {active_render_uv}")
-            print(f"  Total UV maps before cleanup: {len(mesh.uv_layers)}")
-            
+                        
             # Remove all UV maps except the active render one
             uv_layers_to_remove = []
             for uv_layer in mesh.uv_layers:
@@ -42,9 +40,9 @@ class OBJECT_OT_CleanUpUVs(bpy.types.Operator):
                 uv_layer = mesh.uv_layers.get(uv_name)
                 if uv_layer:
                     mesh.uv_layers.remove(uv_layer)
-                    print(f"  Removed UV map: {uv_name}")
                     removed_count += 1
-            
+
+            total_removed_count += removed_count
             print(f"  Removed {removed_count} UV maps")
             
             # Rename the remaining UV map to "UVMap"
@@ -72,9 +70,8 @@ class OBJECT_OT_CleanUpUVs(bpy.types.Operator):
             
             processed_count += 1
         
-        
-        print(f"\nProcessed {processed_count} mesh objects")
-        print(f"UV cleanup completed!")
+        self.report({'INFO'}, f"UV cleanup completed! {total_removed_count} UV maps removed from {processed_count} objects.")
+        return {'FINISHED'}
 
 
 
