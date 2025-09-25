@@ -6,6 +6,7 @@ from .delete_objects import NODE_OT_DeleteObjectsWithoutTexture, NODE_OT_DeleteF
 from .find_missing_textures import NODE_OT_FindMissingTextures
 from .mesh_alignment import NODE_PT_MoveToGizmo, NODE_PT_AlignToPlane
 from .set_uv import SetActiveUVOperator
+from .uv_cleanup import OBJECT_OT_CleanUpUVs
 from .multy_rip_cleanup import NODE_PT_MergeDuplicateMaterials, NODE_PT_DeleteDuplicateObjects
 from .color_override import OBJECT_OT_SetVertexColor, OBJECT_OT_CopyColor, OBJECT_OT_SelectObjectsContainingMaterials, OBJECT_OT_SelectObjectsContainingSelectedMaterial
 
@@ -15,6 +16,7 @@ classes = [NODE_OT_AutoSetup, NODE_OT_AutoSetupConfigAdjustment
            , NODE_OT_FindMissingTextures
            , NODE_PT_MoveToGizmo, NODE_PT_AlignToPlane
            , SetActiveUVOperator
+           , OBJECT_OT_CleanUpUVs
            , NODE_PT_MergeDuplicateMaterials, NODE_PT_DeleteDuplicateObjects
            , OBJECT_OT_SetVertexColor, OBJECT_OT_CopyColor, OBJECT_OT_SelectObjectsContainingMaterials, OBJECT_OT_SelectObjectsContainingSelectedMaterial
            ]

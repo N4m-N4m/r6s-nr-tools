@@ -4,13 +4,13 @@ from bpy.types import Panel # type: ignore
 
 class NODE_PT_AutoSetupPanel(Panel):
     """
-    UI Panel for DynaTools-R6
+    UI Panel Tools for Ninja Ripper Rips from Rainbow Six Siege.
     """
-    bl_label = "DynaTools-R6"
+    bl_label = "R6S-NR-Tools"
     bl_idname = "VIEW3D_PT_dyna_tools"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_category = 'DynaTools-R6'
+    bl_category = 'R6S-NR-Tools'
 
     def draw(self, context):
         layout = self.layout
@@ -57,13 +57,21 @@ class NODE_PT_AutoSetupPanel(Panel):
         else:
             box.label(text="Select a valid mesh object.", icon='ERROR')
 
-    # Create a box for Material and Lighting Setup
+    # Create a box for UV Tools
         box = layout.box()
-        box.label(text="Material and Lighting Setup")
+        box.label(text="UV tools")
         row = box.row()
         row.prop(scene.uv_settings, "layer_name", text="UV Layer Name")
         row = box.row()
         row.operator("object.set_active_uv", text="Set Active UV").uv_name = scene.uv_settings.layer_name
+        row = box.row()
+        row.operator("object.uv_cleanup", text="Delete unsued UV-s", icon ='ERROR')
+        
+
+    # Create a box for Material and Lighting Setup
+        box = layout.box()
+        box.label(text="Material and Lighting Setup")
+
         row = box.row()
         row.scale_y = 2.0
         row.operator("object.create_lights_from_material", text="Create Lights From Material")
