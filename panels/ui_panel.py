@@ -67,6 +67,18 @@ class NODE_PT_AutoSetupPanel(Panel):
         row = box.row()
         row.operator("object.uv_cleanup", text="Delete unsued UV-s", icon ='ERROR')
         
+    # Create a box for Finding Missing Textures
+        box = layout.box()
+        box.label(text="Find Missing Textures For Selected:")
+        settings = scene.texture_import_settings
+        row = box.row()
+        row.prop(settings, "log_file_path")
+        row = box.row()
+        row.prop(settings, "texture_folder")
+        row = box.row()
+        row.enabled = bool(settings.log_file_path and settings.texture_folder)
+        row.operator("texture.find_missing_textures")
+
 
     # Create a box for Material and Lighting Setup
         box = layout.box()
@@ -82,18 +94,6 @@ class NODE_PT_AutoSetupPanel(Panel):
         row = box.row()
         row.scale_y = 2.0
         row.operator("node.auto_setup_node_group", text="Auto Setup Node Group")
-
-    # Create a box for Finding Missing Textures
-        box = layout.box()
-        box.label(text="Find Missing Textures For Selected:")
-        settings = scene.texture_import_settings
-        row = box.row()
-        row.prop(settings, "log_file_path")
-        row = box.row()
-        row.prop(settings, "texture_folder")
-        row = box.row()
-        row.enabled = bool(settings.log_file_path and settings.texture_folder)
-        row.operator("texture.find_missing_textures")
 
     # Create a box for Override Color Assignment
         box = layout.box()
