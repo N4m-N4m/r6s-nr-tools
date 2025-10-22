@@ -7,7 +7,7 @@ class NODE_PT_AutoSetupPanel(Panel):
     UI Panel Tools for Ninja Ripper Rips from Rainbow Six Siege.
     """
     bl_label = "R6S-NR-Tools"
-    bl_idname = "VIEW3D_PT_dyna_tools"
+    bl_idname = "VIEW3D_PT_r6nr_tools"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'R6S-NR-Tools'
@@ -23,6 +23,10 @@ class NODE_PT_AutoSetupPanel(Panel):
         row.operator("object.delete_flat_artifacts", text="Delete Flat Artifacts")
         row = box.row()
         row.operator("object.delete_without_texture", text="Delete Objects Without Texture")
+        row = box.row()
+        row.prop(scene, "boundary_merge_distance", text="Merge Distance")
+        row = box.row()
+        row.operator("mesh.mark_boundary_and_merge", text="Merge & Keep Sharp")
 
     # Access the AlignmentSettings property group
         align_props = scene.align_props
@@ -185,7 +189,19 @@ class ShaderTypeSettings(bpy.types.PropertyGroup):
     ) # type: ignore
 
 
+
 def register():
+
+    bpy.types.Scene.boundary_merge_distance = bpy.props.FloatProperty(
+        name="Merge Distance",
+        description="Distance threshold for merging vertices",
+        default=0.0001,
+        min=0.0,
+        max=1.0,
+        precision=4,
+        step=0.01
+    )
+
     bpy.utils.register_class(NODE_PT_AutoSetupPanel)
     bpy.utils.register_class(DefaultConfigSettings)
     bpy.utils.register_class(NODE_MT_MaterialSelectionPopup)
@@ -203,6 +219,9 @@ def register():
 
 
 def unregister():
+
+    del bpy.types.Scene.boundary_merge_distance
+
     bpy.utils.unregister_class(NODE_PT_AutoSetupPanel)
     bpy.utils.unregister_class(DefaultConfigSettings)
     bpy.utils.unregister_class(NODE_MT_MaterialSelectionPopup)
