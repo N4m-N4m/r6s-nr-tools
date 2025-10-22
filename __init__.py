@@ -2,7 +2,7 @@ bl_info = {
     "name": "R6S NR Tools",
     "description": "Tool for importing and managing NR assets in R6.",
     "author": "dyn4micfx and nam-nam",
-    "version": (3, 0, 1),
+    "version": (3, 1, 0),
     "blender": (4, 1, 0),
     "location": "View3D > Sidebar > R6S-NR-Tools",
     "warning": "",
