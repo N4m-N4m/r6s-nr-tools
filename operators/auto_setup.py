@@ -223,7 +223,7 @@ def get_shader_type_from_config(config_type):
     """
     shader_mapping = {
         'MAP': 'Siege Object BSDF',
-        'CHAR': 'Siege Character BSDF', 
+        'CHAR': 'Siege Character BSDF V3', 
         'GUN': 'Siege Weapon BSDF'
     }
     return shader_mapping.get(config_type, 'Siege Object BSDF')
@@ -232,7 +232,7 @@ def load_shader_groups():
     """
     Load all shader groups.
     """
-    shader_groups = ["Siege Object BSDF", "Siege Character BSDF", "Siege Weapon BSDF"]
+    shader_groups = ["Siege Object BSDF", "Siege Character BSDF V3", "Siege Weapon BSDF"]
     for group_name in shader_groups:
         shader_group = append_shader_group(group_name)
         if shader_group:
