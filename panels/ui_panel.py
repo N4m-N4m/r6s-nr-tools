@@ -39,6 +39,16 @@ class NODE_PT_AutoSetupPanel(Panel):
         row = box.row()
         row.operator("object.delete_duplicate_objects", text="Delete Duplicate Objects")
 
+    # Create a box for Similar Selection and Instancing
+        box = layout.box()
+        box.label(text="Similar Mesh Tools")
+        row = box.row()
+        row.operator("object.select_similar_vertex_material", text="Select Similar (Verts + Mats)")
+        row = box.row()
+        row.operator("object.instance_similar_by_obb", text="Instance Similar (OBB Rotation)")
+        row = box.row()
+        row.operator("object.create_smallest_bounding_box", text="Create Smallest Bounding Box")
+
     # Create a box for Alignment Tools
         box = layout.box()
         box.label(text="Alignment Tools:")

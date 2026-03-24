@@ -10,6 +10,7 @@ from .set_uv import SetActiveUVOperator
 from .uv_cleanup import OBJECT_OT_CleanUpUVs
 from .multy_rip_cleanup import NODE_PT_MergeDuplicateMaterials, NODE_PT_DeleteDuplicateObjects
 from .color_override import OBJECT_OT_SetVertexColor, OBJECT_OT_CopyColor, OBJECT_OT_SelectObjectsContainingMaterials, OBJECT_OT_SelectObjectsContainingSelectedMaterial
+from .similar_instancing import OBJECT_OT_SelectSimilarByVertexAndMaterial, OBJECT_OT_InstanceSimilarByOBB, OBJECT_OT_CreateSmallestBoundingBox
 
 classes = [NODE_OT_AutoSetup, NODE_OT_AutoSetupConfigAdjustment
            , NODE_OT_CreateLightsFromMaterial
@@ -21,6 +22,8 @@ classes = [NODE_OT_AutoSetup, NODE_OT_AutoSetupConfigAdjustment
            , OBJECT_OT_CleanUpUVs
            , NODE_PT_MergeDuplicateMaterials, NODE_PT_DeleteDuplicateObjects
            , OBJECT_OT_SetVertexColor, OBJECT_OT_CopyColor, OBJECT_OT_SelectObjectsContainingMaterials, OBJECT_OT_SelectObjectsContainingSelectedMaterial
+           , OBJECT_OT_SelectSimilarByVertexAndMaterial, OBJECT_OT_InstanceSimilarByOBB
+           , OBJECT_OT_CreateSmallestBoundingBox
            ]
 
 def register():
