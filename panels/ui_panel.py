@@ -26,7 +26,7 @@ class NODE_PT_AutoSetupPanel(Panel):
         row = box.row()
         row.prop(scene, "boundary_merge_distance", text="Merge Distance")
         row = box.row()
-        row.operator("mesh.mark_boundary_and_merge", text="Merge & Keep Sharp")
+        row.operator("mesh.mark_boundary_and_merge", text="Merge & Keep Normals")
 
     # Access the AlignmentSettings property group
         align_props = scene.align_props
