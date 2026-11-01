@@ -155,31 +155,43 @@ def _obb_basis_and_extents(mesh):
 class OBJECT_OT_SelectSimilarByVertexAndMaterial(bpy.types.Operator):
     bl_idname = "object.select_similar_vertex_material"
     bl_label = "Select Similar (Verts + Materials)"
-    bl_description = "Select mesh objects with the same vertex count and material list as active object"
+    bl_description = "Select mesh objects with the same vertex count and material list as all selected objects"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
+        selected = [obj for obj in context.selected_objects if obj.type == 'MESH']
+        if not selected:
+            self.report({'WARNING'}, "Select at least one mesh object")
+            return {'CANCELLED'}
+
+        signatures = set()
+        for obj in selected:
+            sig = _mesh_signature(obj)
+            if sig is not None:
+                signatures.add(sig)
+
+        if not signatures:
+            self.report({'WARNING'}, "Could not build signatures from selected objects")
+            return {'CANCELLED'}
+
         active = context.view_layer.objects.active
-        if active is None or active.type != 'MESH':
-            self.report({'WARNING'}, "Active object must be a mesh")
-            return {'CANCELLED'}
-
-        signature = _mesh_signature(active)
-        if signature is None:
-            self.report({'WARNING'}, "Could not build active object signature")
-            return {'CANCELLED'}
-
+        selected_set = set(selected)
         bpy.ops.object.select_all(action='DESELECT')
 
         count = 0
         for obj in context.scene.objects:
             if obj.type != 'MESH' or not obj.visible_get():
                 continue
-            if _mesh_signature(obj) == signature:
+            if obj in selected_set:
+                obj.select_set(True)
+                count += 1
+                continue
+            if _mesh_signature(obj) in signatures:
                 obj.select_set(True)
                 count += 1
 
-        context.view_layer.objects.active = active
+        if active and active.name in context.scene.objects:
+            context.view_layer.objects.active = active
         self.report({'INFO'}, f"Selected {count} similar objects.")
         return {'FINISHED'}
 

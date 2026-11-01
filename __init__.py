@@ -16,10 +16,10 @@ import bpy # type: ignore
 import os
 import importlib
 
-from .operators import auto_setup, create_lights, delete_objects, mesh_cleanup, find_missing_textures, mesh_alignment, set_uv, uv_cleanup, multy_rip_cleanup, color_override, similar_instancing
+from .operators import auto_setup, create_lights, delete_objects, mesh_cleanup, find_missing_textures, mesh_alignment, set_uv, uv_cleanup, multy_rip_cleanup, color_override, similar_instancing, load_materials
 from .panels import ui_panel
 
-modules = [auto_setup, create_lights, delete_objects, mesh_cleanup, find_missing_textures, mesh_alignment, set_uv, uv_cleanup, multy_rip_cleanup, color_override, similar_instancing
+modules = [auto_setup, create_lights, delete_objects, mesh_cleanup, find_missing_textures, mesh_alignment, set_uv, uv_cleanup, multy_rip_cleanup, color_override, similar_instancing, load_materials
            , ui_panel]
 
 for module in modules:

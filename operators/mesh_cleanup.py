@@ -202,9 +202,256 @@ class MESH_OT_mark_boundary_and_merge(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class MESH_OT_create_proxy(bpy.types.Operator):
+    bl_idname = "mesh.create_proxy"
+    bl_label = "Create Proxy Mesh"
+    bl_description = "Fast vertex-clustering decimation with boundary preservation"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    # ---- static helpers (pure numpy, no bpy.ops, no mode switches) ----
+
+    @staticmethod
+    def _detect_boundary(mesh, num_verts):
+        """Find boundary vertices via edge-face count (fully vectorised)."""
+        num_edges = len(mesh.edges)
+        num_loops = len(mesh.loops)
+        if num_edges == 0:
+            return np.zeros(num_verts, dtype=bool)
+
+        loop_edge = np.empty(num_loops, dtype=np.int32)
+        mesh.loops.foreach_get("edge_index", loop_edge)
+        edge_face_count = np.bincount(loop_edge, minlength=num_edges)
+
+        boundary_mask = edge_face_count == 1
+        if not np.any(boundary_mask):
+            return np.zeros(num_verts, dtype=bool)
+
+        edge_verts = np.empty(num_edges * 2, dtype=np.int32)
+        mesh.edges.foreach_get("vertices", edge_verts)
+        edge_verts = edge_verts.reshape(-1, 2)
+
+        bv = np.unique(edge_verts[boundary_mask].ravel())
+        is_boundary = np.zeros(num_verts, dtype=bool)
+        is_boundary[bv] = True
+        return is_boundary
+
+    @staticmethod
+    def _cluster(norm, grid_res, is_boundary):
+        """Vertex clustering — boundary verts each get a unique cell."""
+        cells = np.clip((norm * grid_res).astype(np.int32), 0, grid_res - 1)
+        cell_id = (
+            cells[:, 0].astype(np.int64) * grid_res * grid_res
+            + cells[:, 1].astype(np.int64) * grid_res
+            + cells[:, 2].astype(np.int64)
+        )
+        # Boundary vertices get unique IDs above the grid range
+        boundary_idx = np.where(is_boundary)[0]
+        if len(boundary_idx) > 0:
+            base = np.int64(grid_res) ** 3
+            cell_id[boundary_idx] = np.arange(len(boundary_idx), dtype=np.int64) + base
+
+        return np.unique(cell_id, return_inverse=True)
+
+    @staticmethod
+    def _count_faces(inv, loop_vi, face_totals, face_starts, num_polys, mesh_type):
+        new_lv = inv[loop_vi]
+        if mesh_type == 3:
+            t = new_lv.reshape(-1, 3)
+            v = (t[:, 0] != t[:, 1]) & (t[:, 1] != t[:, 2]) & (t[:, 0] != t[:, 2])
+            return len(np.unique(np.sort(t[v], axis=1), axis=0))
+        if mesh_type == 4:
+            q = new_lv.reshape(-1, 4)
+            v = (
+                (q[:, 0] != q[:, 1]) & (q[:, 1] != q[:, 2])
+                & (q[:, 2] != q[:, 3]) & (q[:, 3] != q[:, 0])
+                & (q[:, 0] != q[:, 2]) & (q[:, 1] != q[:, 3])
+            )
+            return len(np.unique(np.sort(q[v], axis=1), axis=0))
+        seen = set()
+        c = 0
+        for fi in range(num_polys):
+            fv = new_lv[face_starts[fi] : face_starts[fi] + face_totals[fi]]
+            if len(np.unique(fv)) >= 3:
+                k = tuple(sorted(fv))
+                if k not in seen:
+                    seen.add(k)
+                    c += 1
+        return c
+
+    @staticmethod
+    def _build_faces(inv, loop_vi, face_totals, face_starts, num_polys, mesh_type):
+        new_lv = inv[loop_vi]
+        if mesh_type == 3:
+            t = new_lv.reshape(-1, 3)
+            v = (t[:, 0] != t[:, 1]) & (t[:, 1] != t[:, 2]) & (t[:, 0] != t[:, 2])
+            t = t[v]
+            _, ui = np.unique(np.sort(t, axis=1), axis=0, return_index=True)
+            return t[np.sort(ui)].tolist()
+        if mesh_type == 4:
+            q = new_lv.reshape(-1, 4)
+            v = (
+                (q[:, 0] != q[:, 1]) & (q[:, 1] != q[:, 2])
+                & (q[:, 2] != q[:, 3]) & (q[:, 3] != q[:, 0])
+                & (q[:, 0] != q[:, 2]) & (q[:, 1] != q[:, 3])
+            )
+            q = q[v]
+            _, ui = np.unique(np.sort(q, axis=1), axis=0, return_index=True)
+            return q[np.sort(ui)].tolist()
+        faces, seen = [], set()
+        for fi in range(num_polys):
+            fv = new_lv[face_starts[fi] : face_starts[fi] + face_totals[fi]]
+            if len(np.unique(fv)) >= 3:
+                k = tuple(sorted(fv))
+                if k not in seen:
+                    seen.add(k)
+                    faces.append(fv.tolist())
+        return faces
+
+    # ---- main entry ----
+
+    def execute(self, context):
+        selected = [o for o in context.selected_objects if o.type == 'MESH']
+        if not selected:
+            self.report({'ERROR'}, "No mesh objects selected")
+            return {'CANCELLED'}
+
+        target_pct = context.scene.proxy_target_percentage / 100.0
+
+        if context.object and context.object.mode != 'OBJECT':
+            bpy.ops.object.mode_set(mode='OBJECT')
+
+        wm = context.window_manager
+        total = len(selected)
+        wm.progress_begin(0, 100)
+
+        total_before = 0
+        total_after = 0
+
+        for i, obj in enumerate(selected):
+            percent = int((i / total) * 100)
+            wm.progress_update(percent)
+            try:
+                context.workspace.status_text_set(
+                    f"Creating proxy: {percent}% ({i + 1}/{total})"
+                )
+            except Exception:
+                pass
+
+            mesh = obj.data
+            num_verts = len(mesh.vertices)
+            num_polys = len(mesh.polygons)
+            num_loops = len(mesh.loops)
+
+            if num_verts < 4 or num_polys == 0:
+                continue
+
+            target_faces = max(int(num_polys * target_pct), 4)
+            if num_polys <= target_faces:
+                total_before += num_polys
+                total_after += num_polys
+                continue
+
+            if mesh.users > 1:
+                obj.data = mesh.copy()
+                mesh = obj.data
+
+            total_before += num_polys
+
+            # Boundary detection (vectorised numpy — no bmesh, no Python loops)
+            is_boundary = self._detect_boundary(mesh, num_verts)
+
+            # Read geometry once
+            co = np.empty(num_verts * 3, dtype=np.float64)
+            mesh.vertices.foreach_get("co", co)
+            co = co.reshape(-1, 3)
+
+            loop_vi = np.empty(num_loops, dtype=np.int32)
+            mesh.loops.foreach_get("vertex_index", loop_vi)
+
+            face_totals = np.empty(num_polys, dtype=np.int32)
+            mesh.polygons.foreach_get("loop_total", face_totals)
+
+            face_starts = np.empty(num_polys, dtype=np.int32)
+            mesh.polygons.foreach_get("loop_start", face_starts)
+
+            if np.all(face_totals == 3):
+                mt = 3
+            elif np.all(face_totals == 4):
+                mt = 4
+            else:
+                mt = 0
+
+            # Normalise positions to [0,1] once (reused by every search step)
+            bbox_min = co.min(axis=0)
+            inv_size = 1.0 / np.maximum(co.max(axis=0) - bbox_min, 1e-10)
+            norm = (co - bbox_min) * inv_size
+
+            # --- binary search for grid_res closest to target face count ---
+            lo = 2
+            hi = max(int(np.cbrt(num_verts) * 3), 10)
+
+            _, inv_hi = self._cluster(norm, hi, is_boundary)
+            fc_hi = self._count_faces(inv_hi, loop_vi, face_totals, face_starts, num_polys, mt)
+            while fc_hi < target_faces and hi < 4000:
+                hi *= 2
+                _, inv_hi = self._cluster(norm, hi, is_boundary)
+                fc_hi = self._count_faces(inv_hi, loop_vi, face_totals, face_starts, num_polys, mt)
+
+            best_res = hi
+            best_diff = abs(fc_hi - target_faces)
+
+            while lo <= hi:
+                mid = (lo + hi) // 2
+                _, inv_mid = self._cluster(norm, mid, is_boundary)
+                fc = self._count_faces(inv_mid, loop_vi, face_totals, face_starts, num_polys, mt)
+                diff = abs(fc - target_faces)
+                if diff < best_diff:
+                    best_diff = diff
+                    best_res = mid
+                if fc < target_faces:
+                    lo = mid + 1
+                elif fc > target_faces:
+                    hi = mid - 1
+                else:
+                    break
+
+            # --- build final mesh at best resolution ---
+            unique, inv = self._cluster(norm, best_res, is_boundary)
+            new_nverts = len(unique)
+
+            # Vertex positions: bincount is faster than np.add.at
+            new_co = np.zeros((new_nverts, 3), dtype=np.float64)
+            for d in range(3):
+                new_co[:, d] = np.bincount(inv, weights=co[:, d], minlength=new_nverts)
+            counts = np.bincount(inv, minlength=new_nverts).astype(np.float64)
+            new_co /= counts[:, np.newaxis]
+
+            faces = self._build_faces(inv, loop_vi, face_totals, face_starts, num_polys, mt)
+            total_after += len(faces)
+
+            mesh.clear_geometry()
+            mesh.from_pydata(new_co.tolist(), [], faces)
+            mesh.update()
+
+        wm.progress_update(100)
+        wm.progress_end()
+        try:
+            context.workspace.status_text_set(None)
+        except Exception:
+            pass
+
+        self.report(
+            {'INFO'},
+            f"Proxy: {total_before:,} \u2192 {total_after:,} faces across {total} objects",
+        )
+        return {'FINISHED'}
+
+
 def register():
     bpy.utils.register_class(MESH_OT_mark_boundary_and_merge)
+    bpy.utils.register_class(MESH_OT_create_proxy)
 
 
 def unregister():
+    bpy.utils.unregister_class(MESH_OT_create_proxy)
     bpy.utils.unregister_class(MESH_OT_mark_boundary_and_merge)

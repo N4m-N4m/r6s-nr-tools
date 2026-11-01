@@ -27,6 +27,10 @@ class NODE_PT_AutoSetupPanel(Panel):
         row.prop(scene, "boundary_merge_distance", text="Merge Distance")
         row = box.row()
         row.operator("mesh.mark_boundary_and_merge", text="Merge & Keep Normals")
+        row = box.row()
+        row.prop(scene, "proxy_target_percentage", text="Target %")
+        row = box.row()
+        row.operator("mesh.create_proxy", text="Create Proxy Mesh")
 
     # Access the AlignmentSettings property group
         align_props = scene.align_props
@@ -108,6 +112,9 @@ class NODE_PT_AutoSetupPanel(Panel):
         row = box.row()
         row.scale_y = 2.0
         row.operator("node.auto_setup_node_group", text="Auto Setup Node Group")
+
+        row = box.row()
+        row.operator("object.load_all_materials", text="Load All Materials", icon='MATERIAL')
 
     # Create a box for Override Color Assignment
         box = layout.box()
@@ -202,6 +209,15 @@ class ShaderTypeSettings(bpy.types.PropertyGroup):
 
 def register():
 
+    bpy.types.Scene.proxy_target_percentage = bpy.props.FloatProperty(
+        name="Target %",
+        description="Target percentage of faces to keep per object",
+        default=5.0,
+        min=0.1,
+        max=100.0,
+        precision=1,
+    )
+
     bpy.types.Scene.boundary_merge_distance = bpy.props.FloatProperty(
         name="Merge Distance",
         description="Distance threshold for merging vertices",
@@ -230,6 +246,7 @@ def register():
 
 def unregister():
 
+    del bpy.types.Scene.proxy_target_percentage
     del bpy.types.Scene.boundary_merge_distance
 
     bpy.utils.unregister_class(NODE_PT_AutoSetupPanel)

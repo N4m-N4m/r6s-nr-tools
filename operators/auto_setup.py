@@ -194,6 +194,22 @@ DEFAULT_CONFIG_MAPPING = {
     "GUN": DEFAULT_CONFIG_GUN
 }
 
+# Largest dimension (px) at or below which an unconnected image texture is
+# treated as a "ripped" color/constant value and removed during cleanup.
+UNUSED_TEXTURE_MAX_SIZE = 16
+
+# Default scale applied to the detail-normal Mapping node (X/Y/Z).
+DETAIL_NORMAL_MAPPING_SCALE = 7.0
+
+# Largest dimension (px) at or below which a detail-normal texture is treated as
+# a small tiling texture that should be scaled by the shared Mapping node. Larger
+# detail normals (e.g. unique face textures like mat_77) are left on their UVs.
+TILING_DETAIL_MAX_SIZE = 128
+
+# Group inputs that receive tiling detail-normal textures and therefore share
+# the Texture Coordinate -> Mapping node.
+DETAIL_NORMAL_INPUTS = ("Normal Detail R", "Normal Detail G", "Normal Detail B")
+
 
 def append_shader_group(group_name):
     """
@@ -239,6 +255,123 @@ def load_shader_groups():
             print(f"Shader group '{group_name}' loaded successfully.")
         else:
             print(f"Shader group '{group_name}' could not be loaded.")
+
+
+def _is_unused_texture(img_node):
+    """
+    A texture is considered an unused "ripped" color/constant value if it has an
+    image whose largest dimension is at or below UNUSED_TEXTURE_MAX_SIZE.
+    """
+    img = img_node.image
+    if img is None:
+        return False
+    return max(img.size[0], img.size[1]) <= UNUSED_TEXTURE_MAX_SIZE
+
+
+def _is_tiling_detail(img_node):
+    """
+    A detail-normal texture is treated as a small tiling texture (and therefore
+    scaled by the shared Mapping node) when its largest dimension is at or below
+    TILING_DETAIL_MAX_SIZE. Larger detail normals are unique, UV-mapped textures
+    (e.g. faces, see mat_77) and must keep their original UVs.
+    """
+    img = img_node.image
+    if img is None:
+        return False
+    return max(img.size[0], img.size[1]) <= TILING_DETAIL_MAX_SIZE
+
+
+def organize_character_material(tree, node_group):
+    """
+    Clean up and organize a character material after auto setup:
+      * route the small tiling detail-normal textures through a shared Texture
+        Coordinate + Mapping node (scaled by DETAIL_NORMAL_MAPPING_SCALE), while
+        leaving large unique detail normals (e.g. faces) on their own UVs,
+      * delete the tiny unused "ripped" textures that carry no real data,
+      * lay the nodes out in a tidy, readable order.
+    """
+    nodes = tree.nodes
+    links = tree.links
+
+    # Collect the small tiling detail-normal image nodes that feed the shader
+    # group. Large, unique detail normals are skipped so they keep their UVs.
+    detail_nodes = []
+    for input_name in DETAIL_NORMAL_INPUTS:
+        if input_name not in node_group.inputs:
+            continue
+        socket = node_group.inputs[input_name]
+        for link in socket.links:
+            from_node = link.from_node
+            if (from_node.type == 'TEX_IMAGE'
+                    and _is_tiling_detail(from_node)
+                    and from_node not in detail_nodes):
+                detail_nodes.append(from_node)
+
+    # Build (or reuse) the shared Texture Coordinate -> Mapping chain and feed
+    # the Vector input of every detail-normal texture.
+    if detail_nodes:
+        tex_coord = next((n for n in nodes if n.type == 'TEX_COORD'), None)
+        if tex_coord is None:
+            tex_coord = nodes.new(type='ShaderNodeTexCoord')
+
+        mapping = next((n for n in nodes if n.type == 'MAPPING'), None)
+        if mapping is None:
+            mapping = nodes.new(type='ShaderNodeMapping')
+        mapping.inputs['Scale'].default_value = (
+            DETAIL_NORMAL_MAPPING_SCALE,
+            DETAIL_NORMAL_MAPPING_SCALE,
+            DETAIL_NORMAL_MAPPING_SCALE,
+        )
+
+        if not mapping.inputs['Vector'].is_linked:
+            links.new(mapping.inputs['Vector'], tex_coord.outputs['UV'])
+
+        for img_node in detail_nodes:
+            if not img_node.inputs['Vector'].is_linked:
+                links.new(img_node.inputs['Vector'], mapping.outputs['Vector'])
+
+    # Remove the tiny "ripped" textures. Detail normals are 128px+, so they are
+    # never caught here; any links the rip may already have are dropped with it.
+    for img_node in [n for n in nodes if n.type == 'TEX_IMAGE']:
+        if _is_unused_texture(img_node):
+            nodes.remove(img_node)
+
+    # Lay everything out: real maps stacked on the left feeding the group,
+    # detail normals below them, with the Texture Coordinate/Mapping chain
+    # furthest to the left.
+    group_input_order = [
+        "Diffuse", "Normal Base", "PBR Multi", "ID map",
+        "Normal Detail R", "Normal Detail G", "Normal Detail B",
+    ]
+    ordered = []
+    seen = set()
+    for input_name in group_input_order:
+        if input_name in node_group.inputs:
+            for link in node_group.inputs[input_name].links:
+                src = link.from_node
+                if src.type == 'TEX_IMAGE' and src.name not in seen:
+                    ordered.append(src)
+                    seen.add(src.name)
+    # Any remaining image nodes keep their relative order at the end.
+    for n in nodes:
+        if n.type == 'TEX_IMAGE' and n.name not in seen:
+            ordered.append(n)
+            seen.add(n.name)
+
+    for i, img_node in enumerate(ordered):
+        img_node.location = (-950, 400 - i * 280)
+
+    node_group.location = (0, 0)
+    if "Material Output" in nodes:
+        nodes["Material Output"].location = (300, 100)
+
+    tex_coord = next((n for n in nodes if n.type == 'TEX_COORD'), None)
+    mapping = next((n for n in nodes if n.type == 'MAPPING'), None)
+    if mapping is not None:
+        mapping.location = (-1350, -350)
+    if tex_coord is not None:
+        tex_coord.location = (-1550, -350)
+
 
 class NODE_OT_AutoSetup(bpy.types.Operator):
     """
@@ -350,6 +483,11 @@ class NODE_OT_AutoSetup(bpy.types.Operator):
                                 # Handle image node connections
                                 elif isinstance(img_index, int) and img_index < count:
                                     img_node = img_nodes[img_index]
+                                    # For characters, never wire the tiny "ripped"
+                                    # color/constant textures; they are cleaned up
+                                    # by organize_character_material afterwards.
+                                    if config_type == "CHAR" and _is_unused_texture(img_node):
+                                        continue
                                     use_premul = config.get("USE-Premul", False)
                                     first_word = input_key.split(" ")[0]
                                     if input_key in {"Override Strength", "PBR", "Mix Factor"} or first_word == "Alpha":
@@ -358,6 +496,11 @@ class NODE_OT_AutoSetup(bpy.types.Operator):
                                         dyn_genlink(input_key, "Color", img_node)
 
                         tree.links.new(input_node, output_node)
+
+                        # Character materials get extra cleanup and tidy layout:
+                        # shared detail-normal mapping + removal of unused rips.
+                        if config_type == "CHAR":
+                            organize_character_material(tree, node_group)
 
         return {'FINISHED'}
 
