@@ -103,5 +103,37 @@ Developed By: [Dyn4mic](https://x.com/dyn4micfx) and [Nam-Nam](https://x.com/Nam
   - Matches textures to selected objects.
   - Appends missing textures to the object's material node tree.
 
+### 6. Siege Map Import & Web Export
+
+Lives in the **Siege Map / Web Export** sub-panel of the R6S-NR-Tools sidebar,
+and as **File > Import > Siege Map (.forge)**.
+
+#### Import Siege Map (.forge)
+- **Function:** Imports a Rainbow Six: Siege map directly from a `.forge` archive
+  — geometry, per-instance transforms, optional materials/textures, and entity
+  classification (visual / destructible / reinforcement / spawn / objective / …).
+- **Y11S2 support:** Reads the new **forge v34** container format (4KB-aligned
+  File3 entries, no on-disk FAT) and **Oodle**-compressed payloads. v34 maps
+  require the `oo2core_8_win64.dll` Oodle library — set the `OODLE2_8_PATH`
+  environment variable to it (or place it at `C:\oodle\oo2core_8_win64.dll`).
+  Older (v30–v33, zstd) maps keep working with no extra setup.
+- **How it works:** Walks every LoadUnit, deduplicates entities by UID, shares a
+  Blender mesh datablock per CMO (instancing preserved), and routes objects into
+  per-category child collections.
+
+#### Web Export Pipeline (Clean → Classify → Export)
+Optimizes an imported map for web/three.js use, entirely inside Blender:
+
+1. **Clean Map for Web** — deviation-bounded, silhouette-preserving cleanup per
+   unique mesh datablock (strip materials/UVs/custom normals, weld, limited
+   dissolve, triangulate) and deletion of non-render gameplay objects
+   (collision/trigger/spawn volumes, lights). Instancing is preserved.
+2. **Classify Scene** — tags each object with a web size class + instance count.
+3. **Export Web GLB** — POSITION(+optional NORMAL/UV) only, no materials, mesh
+   data deduplicated, optional per-datablock decimate, **Draco** compression
+   (decoded by three.js `DRACOLoader`). For `EXT_meshopt_compression` + true GPU
+   instancing instead, run the bundled Node post-step in
+   `siege/web/node_meshopt/` (see its README).
+
 ---
 
